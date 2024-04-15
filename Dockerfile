@@ -10,10 +10,9 @@ WORKDIR /app
 COPY pyproject.toml poetry.lock ./
 RUN touch README.md
 
-RUN pip install poetry==1.8.2 \
-    && poetry install --only main --no-root \
-    && rm -rf ${POETRY_CACHE_DIR} \
-    && pip uninstall poetry
+RUN --mount=type=cache,target=${POETRY_CACHE_DIR} \
+    pip install poetry==1.8.2 && \
+    poetry install --only main --no-root
 
 FROM python:3.12-slim as runtime
 
