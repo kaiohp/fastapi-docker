@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = {extras = ["all"], version = "^0.110.1"}
+pandas = "^2.2.2"
 
 
 [tool.poetry.group.docs.dependencies]
