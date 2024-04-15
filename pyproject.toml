@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "fastapi-docker"
+version = "0.1.0"
+description = "Join Docker Captain Sebastián Ramírez as he uses memes to teach you how to create an API ready for production in very little time using FastAPI."
+authors = ["Kaio Silva <kaiohp.silva1@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = {extras = ["all"], version = "^0.110.1"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
