@@ -5,12 +5,17 @@ description = "Join Docker Captain Sebastián Ramírez as he uses memes to teach
 authors = ["Kaio Silva <kaiohp.silva1@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+packages = [{include = "src"}]
+
 
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = {extras = ["all"], version = "^0.110.1"}
-pandas = "^2.2.2"
-openpyxl = "^3.1.2"
+gunicorn = "^22.0.0"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+bcrypt = "4.0.1"
+sqlalchemy = "^2.0.29"
 
 
 [tool.poetry.group.docs.dependencies]
@@ -27,7 +32,11 @@ isort = "^5.13.2"
 flake8 = "^7.0.0"
 pre-commit = "^3.7.0"
 commitizen = "^3.22.0"
+mypy = "^1.10.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 79
