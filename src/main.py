@@ -1,25 +1,29 @@
 import time
-from datetime import datetime, timedelta, timezone
-from typing import Annotated, Optional
+from datetime import timedelta
+from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
-from pydantic import BaseModel
+from fastapi.security import OAuth2PasswordRequestForm
 
+from src.core import crud, models, schemas, security
 from src.core.config import settings
-from src.core.security import get_password_hash, verify_password
+from src.core.db import engine
+from src.core.deps import CurrentUser, SessionDep
+from src.core.schemas import Token
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 
-
-@app.post("/token")
+@app.post("/login/access-token/")
 async def login(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+    session: SessionDep,
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> Token:
-    user = authenticate_user(
-        fake_users_db, form_data.username, form_data.password
+
+    user = crud.authenticate(
+        session=session, email=form_data.username, password=form_data.password
     )
     if not user:
         raise HTTPException(
@@ -27,25 +31,42 @@ async def login(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+    access_token_expires = timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
-    return Token(access_token=access_token, token_type="bearer")
+    return Token(
+        access_token=security.create_access_token(
+            user.id, expires_delta=access_token_expires
+        )
+    )
 
 
-@app.get("/users/me/", response_model=User)
-async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_active_user)]
-):
-    return current_user
+@app.post("/singup", response_model=schemas.User)
+async def create_user(session: SessionDep, user: schemas.UserCreate):
+    db_user = crud.get_user(session, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(session, user)
 
 
-@app.get("/users/me/items/")
+@app.get("/users/me/", response_model=schemas.User)
+async def read_users_me(current_user: CurrentUser, session: SessionDep):
+    db_user = crud.get_user(session, user_id=current_user.id)
+    return db_user
+
+
+@app.get("/users/me/items/", response_model=list[schemas.Item])
 async def read_own_items(
-    current_user: Annotated[User, Depends(get_current_active_user)],
+    session: SessionDep,
+    current_user: CurrentUser,
+    skip: int = 0,
+    limit: int = 100,
 ):
-    return [{"item_id": "Foo", "owner": current_user.username}]
+    db_items = crud.get_items(
+        session, user_id=current_user.id, skip=skip, limit=limit
+    )
+
+    return db_items
 
 
 @app.middleware("http")

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class ItemBase(BaseModel):
@@ -15,12 +15,11 @@ class Item(ItemBase):
     owner_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserBase(BaseModel):
-    username: str
-    email: str
+    email: EmailStr
 
 
 class UserCreate(UserBase):
@@ -33,4 +32,13 @@ class User(UserBase):
     items: list[Item] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+class TokenPayload(BaseModel):
+    sub: int | None = None

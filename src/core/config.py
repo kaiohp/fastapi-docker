@@ -26,12 +26,13 @@ class Settings(BaseSettings):
             return f"http://{self.DOMAIN}"
         return f"https://{self.DOMAIN}"
 
-    POSTGRES_SCHEME: str = "postgresql+psycopg"
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_SERVER: str
-    POSTGRES_PORT: int = 5432
-    POSTGRES_DB: str
+    if ENVIROMENT == "prod":
+        POSTGRES_SCHEME: str = "postgresql+psycopg"
+        POSTGRES_USER: str
+        POSTGRES_PASSWORD: str
+        POSTGRES_SERVER: str
+        POSTGRES_PORT: int = 5432
+        POSTGRES_DB: str
 
     @computed_field  # type: ignore
     @property
